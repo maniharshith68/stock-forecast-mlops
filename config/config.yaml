@@ -1,0 +1,43 @@
+project:
+  name: stock-forecast-mlops
+  version: "1.0.0"
+
+data:
+  tickers: ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"]
+  start_date: "2018-01-01"
+  interval: "1d"
+  raw_s3_prefix: "raw/ohlcv"
+  processed_s3_prefix: "processed/features"
+
+aws:
+  region: "us-east-1"
+  s3_bucket: "stock-forecast-mlops-data"
+
+mlflow:
+  tracking_uri: "http://localhost:5000"
+  experiment_name: "stock-price-forecasting"
+
+models:
+  random_forest:
+    n_estimators: 200
+    max_depth: 10
+  xgboost:
+    n_estimators: 200
+    learning_rate: 0.05
+    max_depth: 6
+  lstm:
+    hidden_size: 64
+    num_layers: 2
+    dropout: 0.2
+    epochs: 50
+    batch_size: 32
+    sequence_length: 30
+    framework: pytorch
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+
+monitoring:
+  drift_threshold: 0.1
+  check_interval_hours: 24
