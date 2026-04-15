@@ -18,3 +18,4 @@ airflow/logs/
 *.tfevents.*
 mlruns/
 .ipynb_checkpoints/
+.coverage
