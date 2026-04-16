@@ -1,0 +1,53 @@
+
+services:
+
+  # ── FastAPI prediction API ─────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    container_name: stock-forecast-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount data and models so training outputs are available
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+      # Mount mlflow.db so API can read experiment metadata
+      - ./mlflow.db:/app/mlflow.db
+    environment:
+      - PYTHONPATH=/app
+      - MLFLOW_TRACKING_URI=sqlite:///mlflow.db
+    env_file:
+      - .env
+    depends_on:
+      - mlflow
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── MLflow tracking UI ─────────────────────────────────────────────────────
+  mlflow:
+    image: python:3.11-slim
+    container_name: stock-forecast-mlflow
+    working_dir: /app
+    ports:
+      - "5001:5000"
+    volumes:
+      - .:/app
+    command: >
+      sh -c "pip install mlflow --quiet &&
+             mlflow ui
+               --backend-store-uri sqlite:///mlflow.db
+               --host 0.0.0.0
+               --port 5000"
+    restart: unless-stopped
+
+networks:
+  default:
+    name: stock-forecast-network
