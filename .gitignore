@@ -17,5 +17,7 @@ airflow/logs/
 .DS_Store
 *.tfevents.*
 mlruns/
+mlflow.db
+mlartifacts/
 .ipynb_checkpoints/
 .coverage
