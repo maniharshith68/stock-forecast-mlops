@@ -5,6 +5,7 @@ Called by the Airflow drift_check_dag and scripts/run_monitoring.py.
 import json
 from pathlib import Path
 from datetime import date
+import pandas as pd
 
 from src.utils.logger import get_logger
 from src.utils.config import load_config
