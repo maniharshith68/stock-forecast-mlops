@@ -159,6 +159,132 @@ PYTHONPATH=. python3 -m pytest tests/integration/ -v -m integration
 
 ---
 
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.11+
+- Docker and Docker Compose
+- Git
+- 8GB RAM recommended
+
+### Option A — Run with Docker (recommended)
+
+The fastest way to get predictions running locally.
+
+**Step 1: Clone the repository**
+```bash
+git clone https://github.com/maniharshith68/stock-forecast-mlops.git
+cd stock-forecast-mlops
+```
+
+**Step 2: Pull the pre-built Docker image**
+```bash
+docker pull ghcr.io/maniharshith68/stock-forecast-mlops-api:latest
+```
+
+**Step 3: Download trained models from S3**
+```bash
+# Install AWS CLI if you don't have it
+# Then configure with read-only credentials or use the public bucket
+aws s3 sync \
+  s3://stock-forecasting-pipeline/stock-forecast-mlops/registry/ \
+  models/registry/
+
+aws s3 sync \
+  s3://stock-forecasting-pipeline/stock-forecast-mlops/processed/ \
+  data/processed/
+```
+
+**Step 4: Start the API**
+```bash
+cp .env.example .env
+docker compose up -d api
+```
+
+**Step 5: Make a prediction**
+```bash
+curl -X POST http://localhost:8000/predict/AAPL \
+  -H "Content-Type: application/json" \
+  -d '{"lookback_days": 90}'
+```
+
+Visit `http://localhost:8000/docs` for the interactive API documentation.
+
+---
+
+### Option B — Run locally without Docker
+
+**Step 1: Clone and install**
+```bash
+git clone https://github.com/maniharshith68/stock-forecast-mlops.git
+cd stock-forecast-mlops
+pip install -r requirements.txt
+```
+
+**Step 2: Run the full pipeline from scratch**
+```bash
+# Fetch stock data
+PYTHONPATH=. python3 scripts/run_ingestion.py
+
+# Engineer features
+PYTHONPATH=. python3 scripts/run_etl.py
+
+# Train models (takes 5–10 minutes)
+PYTHONPATH=. python3 scripts/run_training.py
+
+# Start the prediction API
+PYTHONPATH=. python3 scripts/run_api.py
+```
+
+**Step 3: Make a prediction**
+```bash
+curl -X POST http://localhost:8000/predict/AAPL \
+  -H "Content-Type: application/json" \
+  -d '{"lookback_days": 90}'
+```
+
+---
+
+### Option C — Run with Airflow (full orchestration)
+
+```bash
+# Start all services including Airflow
+docker compose up -d
+
+# Access Airflow UI at http://localhost:8080
+# Login: admin / admin
+# Enable and trigger the stock_ingestion DAG to start the pipeline
+```
+
+---
+
+### Run tests
+
+```bash
+PYTHONPATH=. python3 -m pytest tests/unit/ -v
+```
+
+---
+
+### Known requirements
+
+| Requirement | Why |
+|---|---|
+| Python 3.11 in Docker | PyTorch 2.10 + sklearn OpenMP conflict on Python 3.14 |
+| 2GB RAM minimum | FastAPI + PyTorch + scikit-learn in Docker |
+| AWS credentials (optional) | Only needed for S3 backup — pipeline runs without it |
+
+---
+
+## Full CD
+
+Docker image is automatically built and published on every push to main. Full CD to EC2 requires t3.small or larger.
+
+
+---
+
 ## Collaboration
 This project was developed in collaboration with [Shruti Kumari](https://github.com/shrutisurya108).
 
