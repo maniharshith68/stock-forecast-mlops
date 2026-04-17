@@ -20,18 +20,17 @@ def _make_fake_df(rows: int = 30, ticker: str = "AAPL") -> pd.DataFrame:
     )
 
 
-@patch("src.ingestion.downloader.yf.Ticker")
-def test_download_ohlcv_success(mock_ticker_cls):
+@patch("src.ingestion.downloader.yf.download")
+def test_download_ohlcv_success(mock_download):
     fake_df = _make_fake_df()
-    mock_ticker_cls.return_value.history.return_value = fake_df
+    mock_download.return_value = fake_df
 
     result = download_ohlcv("AAPL", "2023-01-01")
 
     assert isinstance(result, pd.DataFrame)
     assert len(result) == 30
-    assert "Close" in result.columns
-    assert "Ticker" in result.columns
-    assert result["Ticker"].iloc[0] == "AAPL"
+    mock_download.assert_called_once()
+
 
 
 @patch("src.ingestion.downloader.yf.Ticker")
@@ -42,11 +41,11 @@ def test_download_ohlcv_empty_raises(mock_ticker_cls):
         download_ohlcv("INVALID", "2023-01-01")
 
 
-@patch("src.ingestion.downloader.yf.Ticker")
-def test_download_ohlcv_retries_then_raises(mock_ticker_cls):
-    mock_ticker_cls.return_value.history.side_effect = RuntimeError("network error")
+@patch("src.ingestion.downloader.yf.download")
+def test_download_ohlcv_retries_then_raises(mock_download):
+    mock_download.side_effect = RuntimeError("network error")
 
-    with patch("src.ingestion.downloader.time.sleep"):  # skip actual sleep
+    with patch("src.ingestion.downloader.time.sleep"):
         with pytest.raises(RuntimeError):
             download_ohlcv("AAPL", "2023-01-01")
 

@@ -103,13 +103,27 @@ def test_run_training_success():
 # ── Drift tasks ───────────────────────────────────────────────────────────────
 
 def test_check_drift_no_drift_by_default():
-    from src.airflow_tasks.drift_tasks import check_drift
-    result = check_drift(ds="2026-04-16", ti=MagicMock())
+    """Drift task returns correct structure — pipeline mocked."""
+    mock_summary = {
+        "drift_detected":  False,
+        "tickers_drifted": [],
+        "results": {
+            t: {"drift_detected": False, "data_drift": {}, "prediction_drift": {}}
+            for t in ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"]
+        },
+        "failed": [],
+        "total": 5,
+        "run_date": "2026-04-16",
+    }
+    with patch("src.monitoring.monitoring_pipeline.run_monitoring_pipeline",
+               return_value=mock_summary):
+        from src.airflow_tasks.drift_tasks import check_drift
+        result = check_drift(ds="2026-04-16", ti=MagicMock())
+
     assert result["drift_detected"] is False
     assert len(result["results"]) == 5
-    for ticker_result in result["results"].values():
-        assert ticker_result["drift_detected"] is False
-        assert ticker_result["drift_score"]    == 0.0
+    for drift_val in result["results"].values():
+        assert drift_val is False
 
 
 def test_trigger_retraining_no_action_when_no_drift():

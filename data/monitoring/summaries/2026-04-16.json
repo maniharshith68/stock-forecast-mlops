@@ -1,0 +1,35 @@
+{
+  "run_date": "2026-04-16",
+  "total": 5,
+  "drift_detected": false,
+  "tickers_drifted": [],
+  "results": {
+    "AAPL": {
+      "error": "unable to infer type for attribute \"relative\"",
+      "drift_detected": false
+    },
+    "MSFT": {
+      "error": "unable to infer type for attribute \"relative\"",
+      "drift_detected": false
+    },
+    "GOOGL": {
+      "error": "unable to infer type for attribute \"relative\"",
+      "drift_detected": false
+    },
+    "AMZN": {
+      "error": "unable to infer type for attribute \"relative\"",
+      "drift_detected": false
+    },
+    "TSLA": {
+      "error": "unable to infer type for attribute \"relative\"",
+      "drift_detected": false
+    }
+  },
+  "failed": [
+    "AAPL",
+    "MSFT",
+    "GOOGL",
+    "AMZN",
+    "TSLA"
+  ]
+}
