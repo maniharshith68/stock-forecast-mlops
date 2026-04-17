@@ -1,3 +1,5 @@
+[![CI](https://github.com/maniharshith68/stock-forecast-mlops/actions/workflows/ci.yml/badge.svg)](https://github.com/maniharshith68/stock-forecast-mlops/actions/workflows/ci.yml)
+
 # Stock Forecast MLOps Pipeline
 
 A production-grade MLOps pipeline for next-day stock price prediction, built with industry-standard tools across the full ML lifecycle.
