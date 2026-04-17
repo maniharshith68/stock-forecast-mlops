@@ -26,7 +26,7 @@ jobs:
           pip install --upgrade pip
           pip install --extra-index-url https://download.pytorch.org/whl/cpu \
             -r requirements.txt
-          pip install pytest pytest-cov pytest-asyncio faker
+          pip install pytest pytest-cov pytest-asyncio faker moto[s3]
 
       - name: Run unit tests
         env:
