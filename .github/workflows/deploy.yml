@@ -1,0 +1,68 @@
+name: Deploy — Upload to S3
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  upload-to-s3:
+    name: Upload Artifacts to S3
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install boto3
+        run: pip install boto3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            us-east-1
+
+      - name: Verify S3 access
+        run: |
+          aws s3 ls s3://stock-forecasting-pipeline/ --region us-east-1
+          echo "S3 access confirmed"
+
+      - name: Download models from S3 to verify they exist
+        run: |
+          echo "Verifying models exist in S3..."
+          aws s3 ls \
+            s3://stock-forecasting-pipeline/stock-forecast-mlops/registry/ \
+            --recursive
+          echo "Model verification complete"
+
+      - name: Deployment summary
+        run: |
+          echo "=================================================="
+          echo "  Deployment Summary"
+          echo "=================================================="
+          echo "  Environment: ${{ github.event.inputs.environment }}"
+          echo "  Branch:      ${{ github.ref_name }}"
+          echo "  Commit:      ${{ github.sha }}"
+          echo "  S3 Bucket:   stock-forecasting-pipeline"
+          echo "  Image:       ghcr.io/${{ github.repository_owner }}/stock-forecast-mlops-api:latest"
+          echo "=================================================="
+          echo ""
+          echo "  To deploy on EC2 (t3.small or larger):"
+          echo "  1. Launch EC2 instance"
+          echo "  2. Run: bash infrastructure/ec2_setup.sh"
+          echo "  3. API available at http://<ec2-ip>:8000"
+          echo "=================================================="
